@@ -22,12 +22,48 @@ async function run() {
         await client.connect()
         const noteCollection = client.db('noteTaker').collection('note')
 
+
+        // create api and read data
         app.get('/notes', async (req, res) => {
             const query = {}
             const cursor = noteCollection.find(query)
             const result = await cursor.toArray()
             res.send(result)
         })
+
+        // post data
+        app.post('/note', async (req, res) => {
+            const data = req.body
+            const cursor = await noteCollection.insertOne(data)
+            const result = cursor.toArray()
+            res.send(result)
+        })
+
+        //  update data 
+
+        app.put('/note/:id', async (req, res) => {
+            const id = req.params.id;
+            const data = req.body
+            const filterId = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const newdata = {
+                $set: { ...data }
+            }
+            const result = await noteCollection.updateOne(filterId, newdata, options)
+            res.result(result)
+
+        })
+
+
+        // delete data 
+        app.delete('/note/:id', (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await noteCollection.deleteOne(query)
+        })
+
+
+
 
 
     }
